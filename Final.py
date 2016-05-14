@@ -14,6 +14,18 @@ azul = (0, 0, 255)
 negro = (0, 0, 0)
 blanco = (255, 255, 255)
 naranja = (255, 128, 0)
+rojo = (255, 0, 0)
+
+class Barra(pygame.sprite.Sprite):
+	def __init__(self, x, y, dimension, color):
+		pygame.sprite.Sprite.__init__(self)
+		self.posx = x
+		self.posy = y
+		self.dim = dimension
+		self.color = color
+
+	def Dibujar(self, pantalla):
+		pygame.draw.rect(pantalla, self.color, pygame.Rect(self.posx, self.posy, self.dim, 20))
 
 class Menu_Principal:
 	ver = False
@@ -60,11 +72,20 @@ if __name__ == '__main__':
 	fondo_instrucciones = pygame.transform.scale(fondo_instrucciones, dim)
 	fondo_arena = pygame.image.load("Fondos/cuadrilatero.jpg").convert()
 	fondo_arena = pygame.transform.scale(fondo_arena, (ancho, alto - 50))
-	
 
+	#Otras imagenes
+	corazon = pygame.image.load("Otras/corazon.png").convert_alpha()
+	
 	#Fuentes
 	fuente1 = pygame.font.Font("Fuente1.ttf", 60)
 	fuente2 = pygame.font.Font("Fuente1.ttf", 50)
+
+	#Listas
+
+	#Barras
+	vida = Barra(80, 15, 250, rojo)
+	ki = Barra(430, 15, 150, azul)
+	
 
 	#Menu Principal
 	nueva_partida = Menu_Principal("Nueva Partida", (80, 240), pantalla, fuente1)
@@ -179,6 +200,12 @@ if __name__ == '__main__':
 		if inicio and not fin_juego:
 			pantalla.fill(negro)
 			pantalla.blit(fondo_arena, (0, 50))
+			#barras.draw(pantalla)
+
+			#Dibuja las barras
+			pantalla.blit(corazon, (38, 7))
+			vida.Dibujar(pantalla)
+			ki.Dibujar(pantalla)
 
 		
 		reloj.tick(60)
