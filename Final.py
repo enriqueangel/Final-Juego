@@ -60,6 +60,51 @@ class Menu_Principal:
 		self.set_rend()
 		return self.rend.get_rect()
 
+
+class Jugador (pygame.sprite.Sprite):
+	def __init__(self, imagen, x, y, vel):
+		pygame.sprite.Sprite.__init__(self)
+		self.image = pygame.image.load(imagen).convert_alpha()
+		self.rect = self.image.get_rect()
+		self.rect.x = x
+		self.rect.y = y
+		self.velocidad = vel
+		self.cont = 1
+
+	def Volar_Izquierda(self):
+		if self.rect.x >= 20:
+			self.image = pygame.image.load("goku/avanzar_izq.png").convert_alpha()
+			self.rect.x -= self.velocidad
+
+	def Volar_Derecha(self):
+		if self.rect.x <= (ancho-82):
+			self.image = pygame.image.load("goku/avanzar_der.png").convert_alpha()
+			self.rect.x += self.velocidad
+
+	def Volar_Arriba(self):
+		if self.rect.y >= 20:
+			self.image = pygame.image.load("goku/avanzar_der.png").convert_alpha()
+			self.rect.y -= self.velocidad
+
+	def Volar_Abajo(self):
+		if self.rect.y <= (alto-127):
+			self.image = pygame.image.load("goku/avanzar_izq.png").convert_alpha()
+			self.rect.y += self.velocidad
+
+	def Ataque_Basico(self):
+		if self.cont > 2:
+			self.cont = 1
+		#time.sleep(0.5)
+		self.image = pygame.image.load("goku/Ataque1/"+str(self.cont)+".png").convert_alpha()
+		self.cont += 1
+
+	def Primer_Ataque(self):
+		if self.cont >3:
+			self.cont = 1
+		time.sleep(0.5)
+		self.image = pygame.image.load("goku/Ataque2/ataque"+str(self.cont)+".png").convert_alpha()
+		self.cont +=1
+
 #Interfaz usuario
 if __name__ == '__main__':
 	pygame.init()
@@ -81,10 +126,17 @@ if __name__ == '__main__':
 	fuente2 = pygame.font.Font("Fuente1.ttf", 50)
 
 	#Listas
+	ls_jugador = pygame.sprite.Group()
+	ls_todos = pygame.sprite.Group()
 
 	#Barras
 	vida = Barra(80, 15, 250, rojo)
 	ki = Barra(430, 15, 150, azul)
+
+	#Jugador
+	jugador=Jugador('goku/rec_golp_izq.png', 200, 200, 5)
+	ls_jugador.add(jugador)
+	ls_todos.add(jugador)
 	
 
 	#Menu Principal
@@ -207,6 +259,21 @@ if __name__ == '__main__':
 			vida.Dibujar(pantalla)
 			ki.Dibujar(pantalla)
 
+			if tecla[K_LEFT]: #Mueve hacia izquierda jugador
+				jugador.Volar_Izquierda()
+			
+			elif tecla[K_RIGHT]: #Mueve hacia derecha jugador
+				jugador.Volar_Derecha()
+
+			elif tecla[K_UP]: #Mueve hacia arriba jugador
+				jugador.Volar_Arriba()
+
+			elif tecla[K_DOWN]: #Mueve hacia abajo jugador
+				jugador.Volar_Abajo()
+
+
+
+			ls_todos.draw(pantalla)
 		
 		reloj.tick(60)
 		pygame.display.flip()
