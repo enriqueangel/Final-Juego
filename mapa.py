@@ -2,11 +2,6 @@ import pygame
 from pygame.locals import *
 import sys
 
-screen_size = (1280, 720) #resolution of the game
-global FPS
-global clock
-global time_spent
-
 def RelRect(actor, camara):
     return pygame.Rect(actor.rect.x-camara.rect.x, actor.rect.y-camara.rect.y, actor.rect.w, actor.rect.h)
 
@@ -82,31 +77,33 @@ class Jugador(pygame.sprite.Sprite):
         self.y = y
         self.contacto = False
         self.saltar = False
-        self.image = pygame.image.load('idle_right.png').convert_alpha()
+        self.image = pygame.image.load('goku/goku.png').convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.topleft = [x, y]
         self.frame = 0
         self.vel = 10
 
-    def update(self, arriba, izq, der):
+    def update(self, arriba, izq, der, world):
         if arriba:
             if self.contacto:
+                self.image = pygame.image.load("goku/gokuarr.png").convert_alpha()
                 self.saltar = True
                 self.movy -= 20
 
         if izq:
+            self.image = pygame.image.load("goku/gokuatr.png").convert_alpha()
             self.movx = -self.vel
             
-
         if der:
+            self.image = pygame.image.load("goku/gokuder.png").convert_alpha()
             self.movx = +self.vel
 
         if not (izq or der):
             self.movx = 0
+            self.image = pygame.image.load('goku/goku.png').convert_alpha()
+
         self.rect.right += self.movx
-
         self.colision(self.movx, 0, world)
-
 
         if not self.contacto:
             self.movy += 0.3
@@ -201,76 +198,15 @@ class Level(object):
                 if col == "P":
                     self.jugador = Jugador(x,y)
                     self.all_sprite.add(self.jugador)
-                x += 25
-            y += 25
+                x += 32
+            y += 32
             x = 0
 
     def get_size(self):
         lines = self.level1
         #line = lines[0]
         line = max(lines, key=len)
-        self.width = (len(line))*25
-        self.height = (len(lines))*25
+        self.width = (len(line))*32
+        self.height = (len(lines))*32
         return (self.width, self.height)
 
-
-
-def tps(orologio,fps):
-    temp = orologio.tick(fps)
-    tps = temp / 1000.
-    return tps
-
-
-pygame.init()
-pantalla = pygame.display.set_mode(screen_size, FULLSCREEN, 32)
-pantalla_rect = pantalla.get_rect()
-fondo = pygame.image.load("world/background2.jpg").convert_alpha()
-fondo_rect = fondo.get_rect()
-level = Level("level/level")
-level.create_level(0,0)
-world = level.world
-jugador = level.jugador
-pygame.mouse.set_visible(0)
-
-camara = Camara(pantalla, jugador.rect, level.get_size()[0], level.get_size()[1])
-all_sprite = level.all_sprite
-
-FPS = 30
-clock = pygame.time.Clock()
-
-arriba = izq = der = False
-x, y = 0, 0
-while True:
-
-    for event in pygame.event.get():
-        if event.type == QUIT or event.type == KEYDOWN and event.key == K_ESCAPE:
-            pygame.quit()
-            sys.exit()
-
-        if event.type == KEYDOWN and event.key == K_UP:
-            arriba = True
-        if event.type == KEYDOWN and event.key == K_LEFT:
-            izq = True
-        if event.type == KEYDOWN and event.key == K_RIGHT:
-            der = True
-
-        if event.type == KEYUP and event.key == K_UP:
-            arriba = False
-        if event.type == KEYUP and event.key == K_LEFT:
-            izq = False
-        if event.type == KEYUP and event.key == K_RIGHT:
-            der = False
-
-    asize = ((pantalla_rect.w // fondo_rect.w + 1) * fondo_rect.w, (pantalla_rect.h // fondo_rect.h + 1) * fondo_rect.h)
-    bg = pygame.Surface(asize)
-
-    for x in range(0, asize[0], fondo_rect.w):
-        for y in range(0, asize[1], fondo_rect.h):
-            pantalla.blit(fondo, (x, y))
-
-    time_spent = tps(clock, FPS)
-    camara.dibujar_sprites(pantalla, all_sprite)
-
-    jugador.update(arriba, izq, der)
-    camara.update()
-    pygame.display.flip()

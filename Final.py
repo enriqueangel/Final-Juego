@@ -3,11 +3,13 @@ import sys
 import time
 import random
 from pygame.locals import *
+from mapa import *
 
 ancho = 1200
 alto = 700
 
 dim = [ancho, alto]
+screen_size = (1280, 720)
 
 #Colores
 azul = (0, 0, 255)
@@ -60,55 +62,11 @@ class Menu_Principal:
 		self.set_rend()
 		return self.rend.get_rect()
 
-
-class Jugador (pygame.sprite.Sprite):
-	def __init__(self, imagen, x, y, vel):
-		pygame.sprite.Sprite.__init__(self)
-		self.image = pygame.image.load(imagen).convert_alpha()
-		self.rect = self.image.get_rect()
-		self.rect.x = x
-		self.rect.y = y
-		self.velocidad = vel
-		self.cont = 1
-
-	def Volar_Izquierda(self):
-		if self.rect.x >= 20:
-			self.image = pygame.image.load("goku/avanzar_izq.png").convert_alpha()
-			self.rect.x -= self.velocidad
-
-	def Volar_Derecha(self):
-		if self.rect.x <= (ancho-82):
-			self.image = pygame.image.load("goku/avanzar_der.png").convert_alpha()
-			self.rect.x += self.velocidad
-
-	def Volar_Arriba(self):
-		if self.rect.y >= 20:
-			self.image = pygame.image.load("goku/avanzar_der.png").convert_alpha()
-			self.rect.y -= self.velocidad
-
-	def Volar_Abajo(self):
-		if self.rect.y <= (alto-127):
-			self.image = pygame.image.load("goku/avanzar_izq.png").convert_alpha()
-			self.rect.y += self.velocidad
-
-	def Ataque_Basico(self):
-		if self.cont > 2:
-			self.cont = 1
-		#time.sleep(0.5)
-		self.image = pygame.image.load("goku/Ataque1/"+str(self.cont)+".png").convert_alpha()
-		self.cont += 1
-
-	def Primer_Ataque(self):
-		if self.cont >3:
-			self.cont = 1
-		time.sleep(0.5)
-		self.image = pygame.image.load("goku/Ataque2/ataque"+str(self.cont)+".png").convert_alpha()
-		self.cont +=1
-
 #Interfaz usuario
 if __name__ == '__main__':
 	pygame.init()
 	pantalla = pygame.display.set_mode(dim)
+	pantalla_rect = pantalla.get_rect()
 
 	#Fondos
 	fondo_principal = pygame.image.load("Fondos/Fondo4.jpg").convert()
@@ -117,6 +75,12 @@ if __name__ == '__main__':
 	fondo_instrucciones = pygame.transform.scale(fondo_instrucciones, dim)
 	fondo_arena = pygame.image.load("Fondos/cuadrilatero.jpg").convert()
 	fondo_arena = pygame.transform.scale(fondo_arena, (ancho, alto - 50))
+	fondo_arena_rect = fondo_arena.get_rect()
+
+	#Nivel
+	level = Level("level/level")
+	level.create_level(0,0)
+	world = level.world
 
 	#Otras imagenes
 	corazon = pygame.image.load("Otras/corazon.png").convert_alpha()
@@ -134,11 +98,11 @@ if __name__ == '__main__':
 	ki = Barra(430, 15, 150, azul)
 
 	#Jugador
-	jugador=Jugador('goku/rec_golp_izq.png', 200, 200, 5)
-	ls_jugador.add(jugador)
-	ls_todos.add(jugador)
-	
+	jugador = level.jugador
 
+	camara = Camara(pantalla, jugador.rect, level.get_size()[0], level.get_size()[1])
+	all_sprite = level.all_sprite
+	
 	#Menu Principal
 	nueva_partida = Menu_Principal("Nueva Partida", (80, 240), pantalla, fuente1)
 	nueva_tam = nueva_partida.get_tam()
@@ -182,6 +146,9 @@ if __name__ == '__main__':
 	pygame.display.flip()
 	reloj = pygame.time.Clock()
 
+	arriba = izq = der = False
+	x, y = 0, 0
+
 	pantalla.blit(fondo_principal, (0, 0))
 
 	while introduccion and cont <= 1309:
@@ -212,6 +179,8 @@ if __name__ == '__main__':
 		for event in pygame.event.get():
 			if tecla[K_ESCAPE] or event.type == QUIT:
 				terminar = True
+				pygame.quit()
+				sys.exit()
 
 			if not inicio and not instruc and not salir:
 				#Boton nueva partida
@@ -251,7 +220,7 @@ if __name__ == '__main__':
 				
 		if inicio and not fin_juego:
 			pantalla.fill(negro)
-			pantalla.blit(fondo_arena, (0, 50))
+			#pantalla.blit(fondo_arena, (0, 50))
 			#barras.draw(pantalla)
 
 			#Dibuja las barras
@@ -259,21 +228,32 @@ if __name__ == '__main__':
 			vida.Dibujar(pantalla)
 			ki.Dibujar(pantalla)
 
-			if tecla[K_LEFT]: #Mueve hacia izquierda jugador
-				jugador.Volar_Izquierda()
-			
-			elif tecla[K_RIGHT]: #Mueve hacia derecha jugador
-				jugador.Volar_Derecha()
+			if event.type == KEYDOWN and event.key == K_UP:
+				arriba = True
+       	 	if event.type == KEYDOWN and event.key == K_LEFT:
+       	 		izq = True
+        	if event.type == KEYDOWN and event.key == K_RIGHT:
+        		der = True
 
-			elif tecla[K_UP]: #Mueve hacia arriba jugador
-				jugador.Volar_Arriba()
+        	if event.type == KEYUP and event.key == K_UP:
+        		arriba = False
+        	if event.type == KEYUP and event.key == K_LEFT:
+        		izq = False
+        	if event.type == KEYUP and event.key == K_RIGHT:
+        		der = False
 
-			elif tecla[K_DOWN]: #Mueve hacia abajo jugador
-				jugador.Volar_Abajo()
+        	asize = ((pantalla_rect.w // fondo_arena_rect.w + 1) * fondo_arena_rect.w, (pantalla_rect.h // fondo_arena_rect.h + 1) * fondo_arena_rect.h)
+        	bg = pygame.Surface(asize)
+        	'''
+        	for x in range(0, asize[0], fondo_arena_rect.w):
+        		for y in range(0, asize[1], fondo_arena_rect.h):
+        			pantalla.blit(fondo_arena, (x, y))
+        	'''
+        	#camara.dibujar_sprites(pantalla, all_sprite)
+        	jugador.update(arriba, izq, der, world)
+        	camara.update()
 
-
-
-			ls_todos.draw(pantalla)
+        	ls_todos.draw(pantalla)
 		
 		reloj.tick(60)
 		pygame.display.flip()
