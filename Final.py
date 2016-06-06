@@ -62,6 +62,15 @@ class Menu_Principal:
 		self.set_rend()
 		return self.rend.get_rect()
 
+def introduccion(pantalla, intro, cont):
+	while intro and cont <= 1309:
+		fondo = pygame.image.load('Intro/intro ('+str(cont)+').png').convert()
+		fondo = pygame.transform.scale(fondo, dim)
+		pantalla.blit(fondo, (0,0))
+		pygame.display.flip()
+		#time.sleep(0.5)
+		cont += 1
+
 #Interfaz usuario
 if __name__ == '__main__':
 	pygame.init()
@@ -73,9 +82,12 @@ if __name__ == '__main__':
 	fondo_principal = pygame.transform.scale(fondo_principal, dim)
 	fondo_instrucciones = pygame.image.load("Fondos/Fondo5.jpg").convert()
 	fondo_instrucciones = pygame.transform.scale(fondo_instrucciones, dim)
-	fondo_arena = pygame.image.load("Fondos/cuadrilatero.jpg").convert()
-	fondo_arena = pygame.transform.scale(fondo_arena, (ancho, alto - 50))
-	fondo_arena_rect = fondo_arena.get_rect()
+	fondo_nivel1 = pygame.image.load("Fondos/Nivel1.png").convert()
+	fondo_nivel1 = pygame.transform.scale(fondo_nivel1, (ancho, alto))
+	fondo_nivel1_rect = fondo_nivel1.get_rect()
+	fondo_nivel2 = pygame.image.load("Fondos/Nivel2.png").convert()
+	fondo_nivel2 = pygame.transform.scale(fondo_nivel2, (ancho, alto))
+	fondo_nivel2_rect = fondo_nivel2.get_rect()
 
 	#Nivel
 	level = Level("level/level")
@@ -84,6 +96,7 @@ if __name__ == '__main__':
 
 	#Otras imagenes
 	corazon = pygame.image.load("Otras/corazon.png").convert_alpha()
+	rayo = pygame.image.load("Otras/rayo.png").convert_alpha()
 	
 	#Fuentes
 	fuente1 = pygame.font.Font("Fuente1.ttf", 60)
@@ -99,6 +112,9 @@ if __name__ == '__main__':
 
 	#Jugador
 	jugador = level.jugador
+
+	#Enemigos
+	enemigo = level.enem
 
 	camara = Camara(pantalla, jugador.rect, level.get_size()[0], level.get_size()[1])
 	all_sprite = level.all_sprite
@@ -132,7 +148,7 @@ if __name__ == '__main__':
 	inicio = False
 	instruc = False
 	pause = False
-	introduccion = False
+	intro = False
 	salir = False
 	iniciar_jue = False
 	fin_juego = False
@@ -151,13 +167,7 @@ if __name__ == '__main__':
 
 	pantalla.blit(fondo_principal, (0, 0))
 
-	while introduccion and cont <= 1309:
-		fondo = pygame.image.load('Intro/intro ('+str(cont)+').png').convert()
-		fondo = pygame.transform.scale(fondo, dim)
-		pantalla.blit(fondo, (0,0))
-		pygame.display.flip()
-		#time.sleep(0.5)
-		cont += 1
+	introduccion(pantalla, intro, cont)
 
 	#time.sleep(0.5)
 
@@ -220,40 +230,42 @@ if __name__ == '__main__':
 				
 		if inicio and not fin_juego:
 			pantalla.fill(negro)
-			#pantalla.blit(fondo_arena, (0, 50))
+			#pantalla.blit(fondo_nivel1, (0, 50))
 			#barras.draw(pantalla)
 
 			#Dibuja las barras
-			pantalla.blit(corazon, (38, 7))
-			vida.Dibujar(pantalla)
-			ki.Dibujar(pantalla)
 
 			if event.type == KEYDOWN and event.key == K_UP:
 				arriba = True
-       	 	if event.type == KEYDOWN and event.key == K_LEFT:
-       	 		izq = True
-        	if event.type == KEYDOWN and event.key == K_RIGHT:
-        		der = True
+			if event.type == KEYDOWN and event.key == K_LEFT:
+				izq = True
+			if event.type == KEYDOWN and event.key == K_RIGHT:
+				der = True
 
-        	if event.type == KEYUP and event.key == K_UP:
-        		arriba = False
-        	if event.type == KEYUP and event.key == K_LEFT:
-        		izq = False
-        	if event.type == KEYUP and event.key == K_RIGHT:
-        		der = False
+			if event.type == KEYUP and event.key == K_UP:
+				arriba = False
+			if event.type == KEYUP and event.key == K_LEFT:
+				izq = False
+			if event.type == KEYUP and event.key == K_RIGHT:
+				der = False
 
-        	asize = ((pantalla_rect.w // fondo_arena_rect.w + 1) * fondo_arena_rect.w, (pantalla_rect.h // fondo_arena_rect.h + 1) * fondo_arena_rect.h)
-        	bg = pygame.Surface(asize)
-        	'''
-        	for x in range(0, asize[0], fondo_arena_rect.w):
-        		for y in range(0, asize[1], fondo_arena_rect.h):
-        			pantalla.blit(fondo_arena, (x, y))
-        	'''
-        	#camara.dibujar_sprites(pantalla, all_sprite)
-        	jugador.update(arriba, izq, der, world)
-        	camara.update()
+			asize = ((pantalla_rect.w // fondo_nivel1_rect.w + 1) * fondo_nivel1_rect.w, (pantalla_rect.h // fondo_nivel1_rect.h + 1) * fondo_nivel1_rect.h)
+			bg = pygame.Surface(asize)
 
-        	ls_todos.draw(pantalla)
+			for x in range(0, asize[0], fondo_nivel1_rect.w):
+				for y in range(0, asize[1], fondo_nivel1_rect.h):
+					pantalla.blit(fondo_nivel1, (x, y))
+
+			camara.dibujar_sprites(pantalla, all_sprite)
+			jugador.update(arriba, izq, der, world)
+			
+			pantalla.blit(corazon, (38, 7))
+			pantalla.blit(rayo, (390, 7))
+			vida.Dibujar(pantalla)
+			ki.Dibujar(pantalla)
+			camara.update()
+
+        	#ls_todos.draw(pantalla)
 		
 		reloj.tick(60)
 		pygame.display.flip()

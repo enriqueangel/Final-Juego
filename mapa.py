@@ -38,34 +38,115 @@ class Obstaculo(pygame.sprite.Sprite):
         self.tip = tip
         pygame.sprite.Sprite.__init__(self)
         if tip == 1:
-            self.image = pygame.image.load("world/piso1.png").convert_alpha()
+            self.image = pygame.image.load("Mundo/Nivel1/pisovol1.png").convert_alpha()
             self.rect = self.image.get_rect()
             self.rect.topleft = [self.x, self.y]
         if tip == 2:
-            self.image = pygame.image.load("world/piso2.png").convert_alpha()
+            self.image = pygame.image.load("Mundo/Nivel1/piso.png").convert_alpha()
             self.rect = self.image.get_rect()
             self.rect.topleft = [self.x, self.y]
         if tip == 3:
-            self.image = pygame.image.load("world/piso3.png").convert_alpha()
+            self.image = pygame.image.load("Mundo/Nivel1/pisovol2.png").convert_alpha()
             self.rect = self.image.get_rect()
             self.rect.topleft = [self.x, self.y]
         if tip == 4:
-            self.image = pygame.image.load("world/muro.png").convert_alpha()
+            self.image = pygame.image.load("Mundo/Nivel1/tierra.png").convert_alpha()
             self.rect = self.image.get_rect()
             self.rect.topleft = [self.x, self.y]
         if tip == 5:
-            self.image = pygame.image.load("world/nube1.png").convert_alpha()
+            self.image = pygame.image.load("Mundo/agua1.png").convert_alpha()
             self.rect = self.image.get_rect()
             self.rect.topleft = [self.x, self.y]
         if tip == 6:
-            self.image = pygame.image.load("world/nube2.png").convert_alpha()
+            self.image = pygame.image.load("Mundo/agua2.png").convert_alpha()
             self.rect = self.image.get_rect()
             self.rect.topleft = [self.x, self.y]
         if tip == 7:
-            self.image = pygame.image.load("world/nube3.png").convert_alpha()
+            self.image = pygame.image.load("Mundo/puas.png").convert_alpha()
             self.rect = self.image.get_rect()
             self.rect.topleft = [self.x, self.y]
-        
+        if tip == 8:
+            self.image = pygame.image.load("Mundo/muro.png").convert_alpha()
+            self.rect = self.image.get_rect()
+            self.rect.topleft = [self.x, self.y]
+        if tip == 9:
+            self.image = pygame.image.load("Mundo/Nivel1/pisoba1.png").convert_alpha()
+            self.rect = self.image.get_rect()
+            self.rect.topleft = [self.x, self.y]
+        if tip == 10:
+            self.image = pygame.image.load("Mundo/Nivel1/pisoba2.png").convert_alpha()
+            self.rect = self.image.get_rect()
+            self.rect.topleft = [self.x, self.y]
+        if tip == 11:
+            self.image = pygame.image.load("Mundo/Nivel1/pisosu1.png").convert_alpha()
+            self.rect = self.image.get_rect()
+            self.rect.topleft = [self.x, self.y]
+        if tip == 12:
+            self.image = pygame.image.load("Mundo/Nivel1/pisosu2.png").convert_alpha()
+            self.rect = self.image.get_rect()
+            self.rect.topleft = [self.x, self.y]
+
+class Enemigo(pygame.sprite.Sprite):
+    '''Clase para el jugador y las colisiones'''
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.movy = 0
+        self.movx = 0
+        self.x = x
+        self.y = y
+        self.contacto = False
+        self.saltar = False
+        self.image = pygame.image.load('Enemigos/enemder.png').convert_alpha()
+        self.rect = self.image.get_rect()
+        self.rect.topleft = [x, y]
+        self.frame = 0
+        self.vel = 10
+        self.izq = False
+
+    def update(self, world):
+        if not self.izq:
+            self.image = pygame.image.load("Enemigos/enemder.png").convert_alpha()
+            self.movx = +self.vel
+        else:
+            self.image = pygame.image.load("Enemigos/enemizq.png").convert_alpha()
+            self.movx = -self.vel
+
+        self.rect.right += self.movx
+        self.colision(self.movx, 0, world)
+
+        if not self.contacto:
+            self.movy += 0.3
+            if self.movy > 10:
+                self.movy = 10
+            self.rect.top += self.movy
+
+        if self.saltar:
+            self.movy += 2
+            self.rect.top += self.movy
+            if self.contacto == True:
+                self.saltar = False
+
+        self.contacto = False
+        self.colision(0, self.movy, world)
+
+
+    def colision(self, movx, movy, world):
+        self.contacto = False
+        for o in world:
+            if self.rect.colliderect(o):
+                if movx > 0:
+                    self.izq = True
+                    self.rect.right = o.rect.left
+                if movx < 0:
+                    self.izq = False
+                    self.rect.left = o.rect.right
+                if movy > 0:
+                    self.rect.bottom = o.rect.top
+                    self.movy = 0
+                    self.contacto = True
+                if movy < 0:
+                    self.rect.top = o.rect.bottom
+                    self.movy = 0
 
 class Jugador(pygame.sprite.Sprite):
     '''Clase para el jugador y las colisiones'''
@@ -126,8 +207,10 @@ class Jugador(pygame.sprite.Sprite):
         for o in world:
             if self.rect.colliderect(o):
                 if movx > 0:
+                    self.image = pygame.image.load('goku/goku.png').convert_alpha()
                     self.rect.right = o.rect.left
                 if movx < 0:
+                    self.image = pygame.image.load('goku/goku.png').convert_alpha()
                     self.rect.left = o.rect.right
                 if movy > 0:
                     self.rect.bottom = o.rect.top
@@ -142,6 +225,8 @@ class Level(object):
     def __init__(self, open_level):
         self.level1 = []
         self.world = []
+        self.obstac = []
+        self.enem = []
         self.all_sprite = pygame.sprite.Group()
         self.level = open(open_level, "r")
 
@@ -168,43 +253,55 @@ class Level(object):
                     self.world.append(obstaculo)
                     self.all_sprite.add(self.world)
                 if col == "H":
+                    obstaculo = Obstaculo(x, y, 8)
+                    self.world.append(obstaculo)
+                    self.all_sprite.add(self.world)
+                if col == "L":
                     obstaculo = Obstaculo(x, y, 4)
                     self.world.append(obstaculo)
                     self.all_sprite.add(self.world)
-                if col == "B":
+                if col == "m":
                     obstaculo = Obstaculo(x, y, 5)
                     #self.world.append(obstaculo)
                     self.all_sprite.add(obstaculo)
-                if col == "N":
+                if col == "M" or col == "T":
                     obstaculo = Obstaculo(x, y, 6)
+                    #self.world.append(obstaculo)
+                    self.all_sprite.add(obstaculo)
+                if col == "T":
+                    obstaculo = Obstaculo(x, y, 7)
+                    self.obstac.append(obstaculo)
+                    self.all_sprite.add(self.obstac)
+                if col == "B":
+                    obstaculo = Obstaculo(x, y, 9)
                     #self.world.append(obstaculo)
                     self.all_sprite.add(obstaculo)
                 if col == "b":
-                    obstaculo = Obstaculo(x, y, 7)
+                    obstaculo = Obstaculo(x, y, 10)
+                    self.world.append(obstaculo)
+                    self.all_sprite.add(self.world)
+                if col == "S":
+                    obstaculo = Obstaculo(x, y, 11)
                     #self.world.append(obstaculo)
                     self.all_sprite.add(obstaculo)
-                if col == "A":
-                    obstaculo = Obstaculo(x, y, 5)
-                    self.world.append(obstaculo)
-                    self.all_sprite.add(self.world)
-                if col == "C":
-                    obstaculo = Obstaculo(x, y, 6)
-                    self.world.append(obstaculo)
-                    self.all_sprite.add(self.world)
-                if col == "a":
-                    obstaculo = Obstaculo(x, y, 7)
+                if col == "s":
+                    obstaculo = Obstaculo(x, y, 12)
                     self.world.append(obstaculo)
                     self.all_sprite.add(self.world)
                 if col == "P":
                     self.jugador = Jugador(x,y)
                     self.all_sprite.add(self.jugador)
+                if col == "E":
+                    self.enemigo = Enemigo(x,y)
+                    self.enem.append(self.enemigo)
+                    self.all_sprite.add(self.enem)
                 x += 32
             y += 32
             x = 0
 
     def get_size(self):
         lines = self.level1
-        #line = lines[0]
+        line = lines[0]
         line = max(lines, key=len)
         self.width = (len(line))*32
         self.height = (len(lines))*32
