@@ -89,11 +89,30 @@ if __name__ == '__main__':
 	fondo_nivel2 = pygame.transform.scale(fondo_nivel2, (ancho, alto))
 	fondo_nivel2_rect = fondo_nivel2.get_rect()
 
-	#Nivel
+	#Nivel 1
 	level = Level("level/level")
-	level.create_level(0,0)
+	level.create_level(0, 0, 1)
 	world = level.world
+	sig_lvl = level.sig_lvl
 
+	#Nivel 2
+	level2 = Level("level/level2")
+	level2.create_level(0, 0, 2)
+	world2 = level2.world
+	sig_lvl2 = level.sig_lvl
+
+	#Jugador
+	jugador_lvl1 = level.jugador
+	jugador_lvl2 = level2.jugador
+
+	#Camera Nivel 1
+	camara = Camara(pantalla, jugador_lvl1.rect, level.get_size()[0], level.get_size()[1])
+	all_sprite = level.all_sprite
+
+	#Camara Nivel 2
+	camara2 = Camara(pantalla, jugador_lvl2.rect, level2.get_size()[0], level2.get_size()[1])
+	all_sprite2 = level2.all_sprite
+        
 	#Otras imagenes
 	corazon = pygame.image.load("Otras/corazon.png").convert_alpha()
 	rayo = pygame.image.load("Otras/rayo.png").convert_alpha()
@@ -110,14 +129,9 @@ if __name__ == '__main__':
 	vida = Barra(80, 15, 250, rojo)
 	ki = Barra(430, 15, 150, azul)
 
-	#Jugador
-	jugador = level.jugador
-
 	#Enemigos
-	enemigo = level.enem
-
-	camara = Camara(pantalla, jugador.rect, level.get_size()[0], level.get_size()[1])
-	all_sprite = level.all_sprite
+	enemigos_lvl1 = level.enem
+	enemigos_lvl2 = level2.enem
 	
 	#Menu Principal
 	nueva_partida = Menu_Principal("Nueva Partida", (80, 240), pantalla, fuente1)
@@ -152,6 +166,8 @@ if __name__ == '__main__':
 	salir = False
 	iniciar_jue = False
 	fin_juego = False
+	nivel1 = True
+	nivel2 = False
 
 	cont = 1
 
@@ -229,12 +245,6 @@ if __name__ == '__main__':
 					instruc = False
 				
 		if inicio and not fin_juego:
-			pantalla.fill(negro)
-			#pantalla.blit(fondo_nivel1, (0, 50))
-			#barras.draw(pantalla)
-
-			#Dibuja las barras
-
 			if event.type == KEYDOWN and event.key == K_UP:
 				arriba = True
 			if event.type == KEYDOWN and event.key == K_LEFT:
@@ -249,21 +259,51 @@ if __name__ == '__main__':
 			if event.type == KEYUP and event.key == K_RIGHT:
 				der = False
 
-			asize = ((pantalla_rect.w // fondo_nivel1_rect.w + 1) * fondo_nivel1_rect.w, (pantalla_rect.h // fondo_nivel1_rect.h + 1) * fondo_nivel1_rect.h)
-			bg = pygame.Surface(asize)
+			#Nivel 1
+			if not jugador_lvl1.nivel:
+				pantalla.fill(negro)
 
-			for x in range(0, asize[0], fondo_nivel1_rect.w):
-				for y in range(0, asize[1], fondo_nivel1_rect.h):
-					pantalla.blit(fondo_nivel1, (x, y))
+				asize = ((pantalla_rect.w // fondo_nivel1_rect.w + 1) * fondo_nivel1_rect.w, (pantalla_rect.h // fondo_nivel1_rect.h + 1) * fondo_nivel1_rect.h)
+				bg = pygame.Surface(asize)
 
-			camara.dibujar_sprites(pantalla, all_sprite)
-			jugador.update(arriba, izq, der, world)
-			
-			pantalla.blit(corazon, (38, 7))
-			pantalla.blit(rayo, (390, 7))
-			vida.Dibujar(pantalla)
-			ki.Dibujar(pantalla)
-			camara.update()
+				for x in range(0, asize[0], fondo_nivel1_rect.w):
+					for y in range(0, asize[1], fondo_nivel1_rect.h):
+						pantalla.blit(fondo_nivel1, (x, y))
+
+				camara.dibujar_sprites(pantalla, all_sprite)
+				jugador_lvl1.update(arriba, izq, der, world, sig_lvl)
+				enemigos_lvl1.update(world)
+				pantalla.blit(corazon, (38, 7))
+				pantalla.blit(rayo, (390, 7))
+
+				vida.Dibujar(pantalla)
+				ki.Dibujar(pantalla)
+				camara.update()
+
+			#Nivel 2
+			if jugador_lvl1.nivel:
+				pantalla.fill(negro)
+
+				asize = ((pantalla_rect.w // fondo_nivel2_rect.w + 1) * fondo_nivel2_rect.w, (pantalla_rect.h // fondo_nivel2_rect.h + 1) * fondo_nivel2_rect.h)
+				bg = pygame.Surface(asize)
+
+				for x in range(0, asize[0], fondo_nivel2_rect.w):
+					for y in range(0, asize[1], fondo_nivel2_rect.h):
+						pantalla.blit(fondo_nivel2, (x, y))
+
+				camara2.dibujar_sprites(pantalla, all_sprite)
+				jugador_lvl2.update(arriba, izq, der, world2, sig_lvl2)
+				enemigos_lvl2.update(world2)
+				pantalla.blit(corazon, (38, 7))
+				pantalla.blit(rayo, (390, 7))
+
+				vida.Dibujar(pantalla)
+				ki.Dibujar(pantalla)
+				camara2.update()
+
+			#Fin Juego
+			#if jugador_lvl2.nivel:
+				#fin hitoria
 
         	#ls_todos.draw(pantalla)
 		
